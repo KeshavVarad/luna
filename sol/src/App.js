@@ -9,9 +9,14 @@ class App extends React.Component {
 
   
 
-  componentWillMount() {
-    this.callAPI();
-  }
+  async componentDidMount() {
+    console.log("Success");
+    await fetch('http://localhost:3000/api/courses')
+                              .then(res => res.text())
+                              .then(text => console.log(text));
+    
+
+  };
 
   render() {
     return (

@@ -3,12 +3,15 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const passport = require('passport');
+//const passport = require('passport');
+const url = require('url');
+const fs = require('fs');
 const session = require('cookie-session');
 const app = express();
+const { google } = require('googleapis');
 require('custom-env').env();
 
-require("./lib/passport-setup");
+//require("./lib/passport-setup");
 
 app.set('view engine', 'pug');
 app.use(logger('dev'));
@@ -20,7 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   name: 'luna-session',
   keys: ['key1', 'key2']
-}))
+}));
 
 // Auth middleware that checks if the user is logged in
 const isLoggedIn = (req, res, next) => {
@@ -28,40 +31,60 @@ const isLoggedIn = (req, res, next) => {
     next();
   } else {
     res.sendStatus(401);
-  }
-}
+  };
+};
 
 
-app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.initialize());
+//app.use(passport.session());
 
 
-
+app.use(require('./routes'));
 
 
 // Example protected and unprotected routes
-app.get('/', (req, res) => res.redirect("/login"))
+app.get('/', (req, res) => res.redirect("/api/login"));
 
-app.get('/api/login', (req, res) => res.send('Please log in'))
+app.get('/api/login', (req, res) => res.send('Please log in'));
 
-// In this route you can see that if the user is logged in u can acess his info in: req.user
-app.get('/api/profile', isLoggedIn, (req, res) => res.send(`Welcome back ${req.user.displayName}!`))
+app.get('/auth/google/callback', (req, res) => {
+  const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
+  const queryObject = url.parse(req.url, true);
+  console.log('Url: ', req.url);
+  const code = queryObject.query.code;
 
-// Auth Routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'], accessType: 'offline'}));
+  oAuth2Client.getToken(code, (err, token) => {
+    if (err) return console.error('Error retrieving access token', err);
+    oAuth2Client.setCredentials({ access_token: token.access_token });
+    var oauth2 = google.oauth2({
+      auth: oAuth2Client,
+      version: 'v2'
+    });
 
-app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/api/login' }),
-  function (req, res) {
-    // Successful authentication, redirect home.
-    res.redirect('/api/profile');
-  }
-);
+    oauth2.userinfo.get(
+      (err, user) => {
+        if (err) {
+          console.log(err);
+        } else {
+          req.session.user = user.data;
+          // Store the token to disk for later program executions
+          fs.writeFile(`./users/${req.session.user.id}.json`, JSON.stringify(token), (err) => {
+            if (err) return console.error(err);
+            res.redirect('/api/courses');
+          });
 
-app.get('/api/logout', (req, res) => {
-  req.session = null;
-  req.logout();
-  res.redirect('/api/login');
-})
+        }
+      }
+    );
+
+
+
+
+  })
+
+
+});
+
 
 
 
