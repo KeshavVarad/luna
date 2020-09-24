@@ -3,15 +3,13 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-//const passport = require('passport');
 const url = require('url');
 const fs = require('fs');
-const session = require('cookie-session');
+const session = require('express-session');
 const app = express();
 const { google } = require('googleapis');
 require('custom-env').env();
 
-//require("./lib/passport-setup");
 
 app.set('view engine', 'pug');
 app.use(logger('dev'));
@@ -21,8 +19,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  name: 'luna-session',
-  keys: ['key1', 'key2']
+  secret: 'secret-key',
+  resave: false,
+  saveUninitialized: false,
 }));
 
 // Auth middleware that checks if the user is logged in
@@ -35,22 +34,17 @@ const isLoggedIn = (req, res, next) => {
 };
 
 
-//app.use(passport.initialize());
-//app.use(passport.session());
-
-
 app.use(require('./routes'));
 
 
 // Example protected and unprotected routes
-app.get('/', (req, res) => res.redirect("/api/login"));
+app.get('/', (req, res) => res.redirect("http://localhost:3000"));
 
-app.get('/api/login', (req, res) => res.send('Please log in'));
+//app.get('/login', (req, res) => res.send('Please log in'));
 
 app.get('/auth/google/callback', (req, res) => {
   const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
   const queryObject = url.parse(req.url, true);
-  console.log('Url: ', req.url);
   const code = queryObject.query.code;
 
   oAuth2Client.getToken(code, (err, token) => {
@@ -70,7 +64,7 @@ app.get('/auth/google/callback', (req, res) => {
           // Store the token to disk for later program executions
           fs.writeFile(`./users/${req.session.user.id}.json`, JSON.stringify(token), (err) => {
             if (err) return console.error(err);
-            res.redirect('/api/courses');
+            res.redirect('http://localhost:3000/courses');
           });
 
         }
@@ -85,6 +79,14 @@ app.get('/auth/google/callback', (req, res) => {
 
 });
 
+app.get('/api/logout', (req, res) => {
+  req.session.destroy(function (err) {
+    if (err) {
+      console.log("--> session destroy failed.err -> ", err);
+    }
+  });
+  res.redirect('http://localhost:3000');
+});
 
 
 

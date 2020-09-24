@@ -1,0 +1,7 @@
+{
+    "restartable": "rs",
+    "ignore": [
+      "users/**",
+      "node_modules/**/node_modules"
+    ]
+}

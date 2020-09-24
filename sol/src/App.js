@@ -1,30 +1,23 @@
 import React from 'react';
 import './App.css';
+import Home from './components/Home';
+import Courses from './components/Courses';
+import Assignments from './components/Assignments';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
-class App extends React.Component {
-  constructor(props){
-    super(props);
-    this.state={apiResponse:""};
-  }
-
-  
-
-  async componentDidMount() {
-    console.log("Success");
-    await fetch('http://localhost:3000/api/courses')
-                              .then(res => res.text())
-                              .then(text => console.log(text));
-    
-
-  };
-
-  render() {
-    return (
+function App() {
+  return (
+    <Router>
       <div className="App">
-        <p>{this.state.apiResponse}</p>
+        <Switch>
+          <Route path="/" exact component={Home} />
+          <Route path="/assignments" component={Assignments} />
+          <Route path="/courses" component={Courses} />
+
+        </Switch>
       </div>
-    );
-  }
+    </Router>
+  )
 }
 
 export default App;
