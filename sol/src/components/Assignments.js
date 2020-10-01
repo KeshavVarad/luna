@@ -1,6 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import '../App.css';
 import UserNav from './navs/UserNav';
+import { makeStyles } from '@material-ui/core/styles';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+
+const date_and_time = require('date-and-time');
+
+const useStyles = makeStyles({
+    table: {
+        minWidth: 650,
+    },
+});
+
+const titleCase = (string) => {
+    var word = string[0].toUpperCase() + string.slice(1);
+    return word;
+};
+
+
 
 export default function Assignments(props) {
 
@@ -9,7 +32,16 @@ export default function Assignments(props) {
     }, [props.assignments]);
 
     const [courses, setCourses] = useState([]);
-    const [assignments, setAssignments] = useState({});
+    const [assignments, setAssignments] = useState({
+        sunday: [],
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+    });
+
 
     const fetchData = async () => {
         const courseData = await fetch('/api/courses');
@@ -17,28 +49,60 @@ export default function Assignments(props) {
         const assignmentData = await fetch('/api/assignments');
         const assignments = await assignmentData.json();
 
-        console.log('courses', courses.data);
-        console.log('assignment', assignments);
-
+        console.log("Assignments", assignments);
         setAssignments(assignments);
         setCourses(courses.data);
     };
 
+    const classes = useStyles();
 
-    return(
+    return (
         <div>
             <UserNav />
             <h1>Assignments</h1>
-            {courses.map(course => (
+            {Object.keys(assignments).map((day) => (
                 <div>
-                    <h1>{course.name}</h1>
-                    <div>
-                        {assignments && assignments[course.id] && assignments[course.id].map(assignment => (
-                            <p>{assignment.title}</p>
-                        ))}
-                    </div>
+                    <h2>{titleCase(day)}</h2>
+                    <TableContainer component={Paper}>
+                        <Table className={classes.table} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Assignment Title</TableCell>
+                                    <TableCell>Due Time</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {assignments[day].map((row) => {
+                                    row.dueTime.minutes = row.dueTime.minutes?row.dueTime.minutes:0;
+                                    var month = `${(row.dueDate.month>10)?row.dueDate.month:`0${row.dueDate.month}`}`;
+                                    var day = `${(row.dueDate.day>10)?row.dueDate.day:`0${row.dueDate.day}`}`;
+                                    var hour = `${(row.dueTime.hours>10)?row.dueTime.hours:`0${row.dueTime.hours}`}`;
+                                    var minute = `${(row.dueTime.minutes>10)?row.dueTime.minutes:`0${row.dueTime.minutes}`}`;
+                                    var dateString = `${row.dueDate.year}-${month}-${day}T${hour}:${minute}Z`;
+
+
+                                    const patternTime = date_and_time.compile('hh:mm A');
+                                    var dTime = date_and_time.format(new Date(dateString), patternTime);
+
+
+
+                                    return (
+                                        <TableRow key={row.title}>
+                                            <TableCell component="th" scope="row">
+                                                <a href={row.alternateLink} target="_blank">{row.title}</a>
+                                            </TableCell>
+                                            <TableCell>{dTime}</TableCell>
+                                        </TableRow>
+                                    )
+                                }
+                            )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </div>
             ))}
+
+
         </div>
     );
 };

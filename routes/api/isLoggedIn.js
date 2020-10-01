@@ -1,15 +1,12 @@
 const router = require('express').Router();
 var isLoggedIn;
 
-router.get('/', function(req, res) {
+router.use('/', function(req, res, next) {
 
-    if(req.session.users){
-        isLoggedIn = true;
+    if(!req.session.user){
+        res.redirect("/");
     }
-    else {
-        isLoggedIn = false;
-    }
-    res.send(isLoggedIn);
+    next();
 });
 
 module.exports = router;
