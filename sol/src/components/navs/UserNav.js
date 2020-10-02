@@ -34,7 +34,7 @@ function UserNav(props) {
 
 
     const handleLogout = () => {
-        window.location.href = "http://localhost:3000/api/logout";
+        window.location.href = "/api/logout";
         setProfileAnchorEl(null);
     };
 

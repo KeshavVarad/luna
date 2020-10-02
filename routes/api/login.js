@@ -17,7 +17,7 @@ router.get("/", function (req, res) {
     }
     else {
         console.log("Calling Redirect");
-        res.redirect("http://localhost:3000/courses")
+        res.redirect("/courses")
     }
 })
 

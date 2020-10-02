@@ -36,7 +36,7 @@ const isLoggedIn = (req, res, next) => {
 
 app.use(require('./routes'));
 
-app.use(express.static(path.join(__dirname, "/sol/build")));
+app.use(express.static(path.join(__dirname, './sol/build')));
 
 
 
