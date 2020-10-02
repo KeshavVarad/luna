@@ -27,7 +27,7 @@ export default function HomeNav() {
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" className={classes.title}>
-                        Luna
+                        My Luna App
                 </Typography>
                     <Button color="inherit" href="/api/login">Login</Button>
                 </Toolbar>

@@ -90,7 +90,7 @@ function UserNav(props) {
                         </Menu>
                     </div>
                     <Typography variant="h6" className={classes.title}>
-                        Luna
+                        My Luna App
                     </Typography>
                     <div>
                         <IconButton
