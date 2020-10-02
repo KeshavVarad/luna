@@ -9,6 +9,8 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import Link from '@material-ui/core/Link';
+import Typography from '@material-ui/core/Typography';
 
 const date_and_time = require('date-and-time');
 
@@ -31,7 +33,7 @@ export default function Assignments(props) {
         fetchData();
     }, [props.assignments]);
 
-    const [courses, setCourses] = useState([]);
+
     const [assignments, setAssignments] = useState({
         sunday: [],
         monday: [],
@@ -43,15 +45,11 @@ export default function Assignments(props) {
     });
 
 
+
     const fetchData = async () => {
-        const courseData = await fetch('/api/courses');
-        const courses = await courseData.json();
         const assignmentData = await fetch('/api/assignments');
         const assignments = await assignmentData.json();
-
-        console.log("Assignments", assignments);
         setAssignments(assignments);
-        setCourses(courses.data);
     };
 
     const classes = useStyles();
@@ -68,7 +66,7 @@ export default function Assignments(props) {
                             <TableHead>
                                 <TableRow>
                                     <TableCell>Assignment Title</TableCell>
-                                    <TableCell>Due Time</TableCell>
+                                    <TableCell align="right">Due Time</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -89,9 +87,12 @@ export default function Assignments(props) {
                                     return (
                                         <TableRow key={row.title}>
                                             <TableCell component="th" scope="row">
-                                                <a href={row.alternateLink} target="_blank">{row.title}</a>
+                                                <Typography>
+                                                    <Link href={row.alternateLink} target="_blank" color="inherit">{row.title}</Link>
+                                                </Typography>
+                                                 
                                             </TableCell>
-                                            <TableCell>{dTime}</TableCell>
+                                            <TableCell align="right">{dTime}</TableCell>
                                         </TableRow>
                                     )
                                 }

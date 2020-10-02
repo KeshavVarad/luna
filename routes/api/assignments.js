@@ -28,8 +28,8 @@ router.get('/', (req, res) => {
     var sundayYear;
 
     if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 0) {
-        if ((date-day)>0){
-            sundayDate = date-day;
+        if ((date - day) > 0) {
+            sundayDate = date - day;
             sundayMonth = month;
             sundayYear = year;
         }
@@ -43,11 +43,11 @@ router.get('/', (req, res) => {
                 sundayYear = year;
             }
         }
-        
+
     }
     else if (month == 3 || month == 5 || month == 8 || month == 10) {
-        if ((date-day)>0){
-            sundayDate = date-day;
+        if ((date - day) > 0) {
+            sundayDate = date - day;
             sundayMonth = month;
             sundayYear = year;
         }
@@ -58,8 +58,8 @@ router.get('/', (req, res) => {
         }
     }
     else if (month == 1 && ((year % 4) == 0) && ((year % 100) == 0) && ((year % 400) == 0)) {
-        if ((date-day)>0){
-            sundayDate = date-day;
+        if ((date - day) > 0) {
+            sundayDate = date - day;
             sundayMonth = month;
             sundayYear = year;
         }
@@ -70,8 +70,8 @@ router.get('/', (req, res) => {
         }
     }
     else {
-        if ((date-day)>0){
-            sundayDate = date-day;
+        if ((date - day) > 0) {
+            sundayDate = date - day;
             sundayMonth = month;
             sundayYear = year;
         }
@@ -81,7 +81,7 @@ router.get('/', (req, res) => {
             sundayYear = year;
         }
     }
-    
+
     var sundayMonth
 
     fs.readFile(filename, (err, token) => {
@@ -100,37 +100,39 @@ router.get('/', (req, res) => {
             };
             var courses = response.data.courses;
             for (item of courses) {
-                console.log(item);
-                var courseWork = await classroom.courses.courseWork.list({courseId: item.id, orderBy: "dueDate desc", pageSize: 10});
+                // console.log(item);
+                var courseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10 });
                 var nextPageToken = courseWork.data.nextPageToken;
                 var index = courseWork.data.courseWork.length - 1;
-                while ((courseWork.data.courseWork[index].dueDate.year >= sundayYear) && (courseWork.data.courseWork[index].dueDate.month >= sundayMonth) && (courseWork.data.courseWork[index].dueDate.day >= sundayDate)) {
-                    var newCourseWork = await classroom.courses.courseWork.list({courseId: item.id, orderBy: "dueDate desc", pageSize: 10, pageToken: nextPageToken});
+                while (nextPageToken && (courseWork.data.courseWork[index].dueDate.year >= sundayYear) && (courseWork.data.courseWork[index].dueDate.month >= sundayMonth) && (courseWork.data.courseWork[index].dueDate.day >= sundayDate)) {
+                    var newCourseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10, pageToken: nextPageToken });
                     nextPageToken = newCourseWork.data.nextPageToken;
                     courseWork.push(newCourseWork.data.courseWork);
                     index = courseWork.length - 1;
                 }
                 for (assignment of courseWork.data.courseWork) {
-                    if (assignment.dueDate.day == sundayDate){
-                        assignments["sunday"].push(assignment);
-                    }
-                    else if (assignment.dueDate.day == (sundayDate + 1)) {
-                        assignments["monday"].push(assignment);
-                    }
-                    else if (assignment.dueDate.day == (sundayDate + 2)) {
-                        assignments["tuesday"].push(assignment);
-                    }
-                    else if (assignment.dueDate.day == (sundayDate + 3)) {
-                        assignments["wednesday"].push(assignment);
-                    }
-                    else if (assignment.dueDate.day == (sundayDate + 4)) {
-                        assignments["thursday"].push(assignment);
-                    }
-                    else if (assignment.dueDate.day == (sundayDate + 5)) {
-                        assignments["friday"].push(assignment);
-                    }
-                    else if (assignment.dueDate.day == (sundayDate + 6)) {
-                        assignments["saturday"].push(assignment);
+                    if (assignment.dueDate) {
+                        if (assignment.dueDate.day == sundayDate) {
+                            assignments["sunday"].push(assignment);
+                        }
+                        else if (assignment.dueDate.day == (sundayDate + 1)) {
+                            assignments["monday"].push(assignment);
+                        }
+                        else if (assignment.dueDate.day == (sundayDate + 2)) {
+                            assignments["tuesday"].push(assignment);
+                        }
+                        else if (assignment.dueDate.day == (sundayDate + 3)) {
+                            assignments["wednesday"].push(assignment);
+                        }
+                        else if (assignment.dueDate.day == (sundayDate + 4)) {
+                            assignments["thursday"].push(assignment);
+                        }
+                        else if (assignment.dueDate.day == (sundayDate + 5)) {
+                            assignments["friday"].push(assignment);
+                        }
+                        else if (assignment.dueDate.day == (sundayDate + 6)) {
+                            assignments["saturday"].push(assignment);
+                        }
                     }
                 }
             };

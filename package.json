@@ -20,6 +20,7 @@
     "morgan": "~1.9.1",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
-    "passport-oauth2-middleware": "^1.0.3"
+    "passport-oauth2-middleware": "^1.0.3",
+    "session-file-store": "^1.4.0"
   }
 }

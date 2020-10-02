@@ -2,6 +2,7 @@
     "restartable": "rs",
     "ignore": [
       "users/**",
+      "sessions/**",
       "node_modules/**/node_modules"
     ]
 }
