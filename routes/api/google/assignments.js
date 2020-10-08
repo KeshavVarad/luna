@@ -7,6 +7,7 @@ function getCourses(auth, callback) {
     const classroom = google.classroom({ version: 'v1', auth });
     classroom.courses.list({
         pageSize: 10,
+        courseStates: ["ACTIVE"],
     }, (err, res) => {
         if (err) return console.error('The API returned an error: ' + err);
         callback(err, res);
@@ -16,7 +17,7 @@ function getCourses(auth, callback) {
 
 router.get('/', (req, res) => {
     const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
-    var filename = path.join(__dirname, `../../users/${req.session.user.id}.json`);
+    var filename = path.join(__dirname, `../../../users/${req.session.user.id}.json`);
     var date_obj = new Date();
     var date = date_obj.getDate();
     var day = date_obj.getDay();
@@ -100,15 +101,14 @@ router.get('/', (req, res) => {
             };
             var courses = response.data.courses;
             for (item of courses) {
-                // console.log(item);
                 var courseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10 });
                 var nextPageToken = courseWork.data.nextPageToken;
                 var index = courseWork.data.courseWork.length - 1;
-                while (nextPageToken && (courseWork.data.courseWork[index].dueDate.year >= sundayYear) && (courseWork.data.courseWork[index].dueDate.month >= sundayMonth) && (courseWork.data.courseWork[index].dueDate.day >= sundayDate)) {
+                while ((index < courseWork.data.courseWork.length) && nextPageToken && courseWork.data.courseWork[index].dueDate && (courseWork.data.courseWork[index].dueDate.year >= sundayYear) && (courseWork.data.courseWork[index].dueDate.month >= sundayMonth) && (courseWork.data.courseWork[index].dueDate.day >= sundayDate)) {
                     var newCourseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10, pageToken: nextPageToken });
                     nextPageToken = newCourseWork.data.nextPageToken;
-                    courseWork.push(newCourseWork.data.courseWork);
-                    index = courseWork.length - 1;
+                    courseWork.data.courseWork.push(newCourseWork.data.courseWork);
+                    index++;
                 }
                 for (assignment of courseWork.data.courseWork) {
                     if (assignment.dueDate) {
@@ -136,6 +136,10 @@ router.get('/', (req, res) => {
                     }
                 }
             };
+
+            
+
+
             res.json(assignments);
         });
 

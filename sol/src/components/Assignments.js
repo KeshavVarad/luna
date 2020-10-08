@@ -47,7 +47,7 @@ export default function Assignments(props) {
 
 
     const fetchData = async () => {
-        const assignmentData = await fetch('/api/assignments');
+        const assignmentData = await fetch('/api/google/assignments');
         const assignments = await assignmentData.json();
         setAssignments(assignments);
     };

@@ -88,7 +88,7 @@ app.get('/api/logout', (req, res) => {
       console.log("--> session destroy failed.err -> ", err);
     }
   });
-  res.redirect('http://localhost:3000');
+  res.redirect('/');
 });
 
 app.get('*', (req, res) => {
