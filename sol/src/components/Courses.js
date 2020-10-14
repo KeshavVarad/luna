@@ -14,7 +14,7 @@ function Courses(props) {
     const fetchData = async () => {
         const courseData = await fetch('/api/google/courses');
         const courses = await courseData.json();
-
+        
         console.log("Courses: ", courses);
         setCourses(courses);
     }

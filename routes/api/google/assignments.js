@@ -85,9 +85,9 @@ router.get('/', (req, res) => {
 
     var sundayMonth
 
-    fs.readFile(filename, (err, token) => {
+    fs.readFile(filename, (err, user) => {
         if (err) console.log(err);
-        oAuth2Client.setCredentials(JSON.parse(token));
+        oAuth2Client.setCredentials(JSON.parse(user).primary);
         const classroom = google.classroom({ version: 'v1', auth: oAuth2Client });
         getCourses(oAuth2Client, async (err, response) => {
             var assignments = {

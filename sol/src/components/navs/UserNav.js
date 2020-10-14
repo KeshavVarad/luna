@@ -51,7 +51,8 @@ function UserNav(props) {
         setProfileAnchorEl(event.currentTarget);
     };
 
-    const handleProfile = () => {
+    const handleProfileClick = (path) => {
+        history.push(path);
         setProfileAnchorEl(null);
     };
 
@@ -117,7 +118,7 @@ function UserNav(props) {
                             open={profileOpen}
                             onClose={() => setProfileAnchorEl(null)}
                         >
-                            <MenuItem onClick={handleProfile}>Profile</MenuItem>
+                            <MenuItem onClick={() => handleProfileClick("/profile")}>Profile</MenuItem>
                             <MenuItem onClick={handleLogout}>Logout</MenuItem>
                         </Menu>
                     </div>

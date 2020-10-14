@@ -46,29 +46,77 @@ app.use(express.static(path.join(__dirname, './sol/build')));
 //app.get('/login', (req, res) => res.send('Please log in'));
 
 app.get('/auth/google/callback', (req, res) => {
+
+  //Make the oAuth client
   const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
+
+  //Get the code to get the token from the url
   const queryObject = url.parse(req.url, true);
   const code = queryObject.query.code;
 
+
+
+  //Get the token using the code
   oAuth2Client.getToken(code, (err, token) => {
+
     if (err) return console.error('Error retrieving access token', err);
+
+    //Set the oAuthClient to use the token that we just got
     oAuth2Client.setCredentials({ access_token: token.access_token });
+
+    //Make an oauth2 client using the oAuthClient we just made
     var oauth2 = google.oauth2({
       auth: oAuth2Client,
       version: 'v2'
     });
 
+    //Get the user's info
     oauth2.userinfo.get(
       (err, user) => {
         if (err) {
           console.log(err);
         } else {
-          req.session.user = user.data;
-          // Store the token to disk for later program executions
-          fs.writeFile(`./users/${req.session.user.id}.json`, JSON.stringify(token), (err) => {
-            if (err) return console.error(err);
-            res.redirect('/courses');
-          });
+
+          //Make a variable called userData
+          var userData, userJSON;
+
+          //If the user's data is not stored in the session
+          if (!req.session.user) {
+
+            req.session.user = {};
+            //Store the user's data into the session
+            req.session.user.primary = user.data;
+
+            //Read the fiile with the user's token in it
+            
+            try {
+              userData = fs.readFileSync(`./users/${req.session.user.primary.id}.json`, {flag: "r"});
+              userJSON = JSON.parse(userData);
+            }
+            catch {
+              userJSON = {primary: {}, secondary: []};
+            }
+            userJSON.primary = token;
+            // Store the token to disk for later program executions
+            fs.writeFile(`./users/${req.session.user.id}.json`, JSON.stringify(userJSON), (err) => {
+              if (err) return console.error(err);
+              res.redirect('/assignments');
+            });
+          }
+          else {
+            req.session.user.secondary = [];
+            req.session.user.secondary.push(user.data);
+            //Read the fiile with the user's token in it
+            userData = fs.readFileSync(`./users/${req.session.user.id}.json`, {flag: "r"});
+            userJSON = JSON.parse(userData);
+            userJSON.secondary.push(token);
+            // Store the token to disk for later program executions
+            fs.writeFile(`./users/${req.session.user.id}.json`, JSON.stringify(userJSON), (err) => {
+              if (err) return console.error(err);
+              res.redirect('/profile');
+            });
+          }
+
 
         }
       }
@@ -77,7 +125,7 @@ app.get('/auth/google/callback', (req, res) => {
 
 
 
-  })
+  });
 
 
 });
@@ -92,7 +140,6 @@ app.get('/api/logout', (req, res) => {
 });
 
 app.get('*', (req, res) => {
-  console.log("Static files sending...");
   console.log(path.join(__dirname, '/sol/build', 'index.html'));
   res.sendFile(path.join(__dirname, '/sol/build', 'index.html'));
 });

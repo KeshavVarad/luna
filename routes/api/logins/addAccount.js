@@ -5,17 +5,11 @@ const SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/classroom.c
 
 router.get("/", function (req, res) {
     const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
-    if (!req.session.user) {
-        const authUrl = oAuth2Client.generateAuthUrl({
-            access_type: 'offline',
-            scope: SCOPES,
-        });
-        res.redirect(authUrl);
-
-    }
-    else {
-        res.redirect("/courses")
-    }
+    const authUrl = oAuth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+    });
+    res.redirect(authUrl);
 })
 
 module.exports = router;
