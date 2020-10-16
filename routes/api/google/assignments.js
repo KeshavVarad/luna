@@ -105,7 +105,6 @@ async function getAssignments(auth, user) {
     var allAssignments = [];
 
     for (var token of allTokens) {
-        console.log("Token: ", token);
         auth.setCredentials(token);
         const classroom = google.classroom({ version: 'v1', auth });
 
@@ -115,7 +114,6 @@ async function getAssignments(auth, user) {
         });
 
         for (item of courseList.data.courses) {
-            console.log("Calling coursework from ", item.name);
             var courseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10 });
             //Get the nextPageToken to get more courses
             var nextPageToken = courseWork.data.nextPageToken;
@@ -151,7 +149,7 @@ router.get('/', (req, res) => {
     //Make oauth client
     const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
     //File name for user's data
-    var filename = path.join(__dirname, `../../../users/${req.session.user.id}.json`);
+    var filename = path.join(__dirname, `../../../users/${req.session.user.primary.id}.json`);
 
     //Get today's date
     var date_obj = new Date();

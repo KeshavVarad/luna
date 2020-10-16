@@ -14,7 +14,7 @@ router.get("/", function (req, res) {
 
     }
     else {
-        res.redirect("/courses")
+        res.redirect("/assignments")
     }
 })
 

@@ -37,7 +37,7 @@ function Profile(props) {
         console.log("User Info: ", userInfo.primary);
         console.log("Secondary User Info: ", userInfo.secondary);
         setPrimaryUserInfo(userInfo.primary);
-        if (userInfo.secondary) {
+        if (userInfo.secondary.length >= 1) {
             setSecondaryUserInfo(userInfo.secondary);
         }
     };

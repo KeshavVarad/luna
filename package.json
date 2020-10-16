@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "cd sol && npm i && npm run build && cd .. && node app.js",
+    "start": "cd sol && npm install && npm run build && cd .. && node app.js",
     "dev": "nodemon app.js"
   },
   "engines": {

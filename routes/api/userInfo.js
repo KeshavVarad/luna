@@ -2,6 +2,7 @@ const router = require('express').Router();
 
 
 router.get("/", (req, res) => {
+    console.log(req.session.user);
     res.json(req.session.user);
 });
 
