@@ -29,7 +29,7 @@ function Profile(props) {
     }, [props.userInfo]);
 
     const [primaryUserInfo, setPrimaryUserInfo] = useState({});
-    const [secondaryUserInfo, setSecondaryUserInfo] = useState([]);
+    const [secondaryUserInfo, setSecondaryUserInfo] = useState([{ email: "NONE" }]);
 
     const fetchData = async () => {
         const userData = await fetch('/api/userInfo');
@@ -37,7 +37,9 @@ function Profile(props) {
         console.log("User Info: ", userInfo.primary);
         console.log("Secondary User Info: ", userInfo.secondary);
         setPrimaryUserInfo(userInfo.primary);
-        setSecondaryUserInfo(userInfo.secondary);
+        if (userInfo.secondary) {
+            setSecondaryUserInfo(userInfo.secondary);
+        }
     };
 
     return (
@@ -59,13 +61,11 @@ function Profile(props) {
                     <ListItem>
                         <ListItemText primary="Secondary Accounts" />
                     </ListItem>
-                    {
-                        secondaryUserInfo.map((user) => (
-                            <ListItem>
-                                <ListItemText secondary={user.email} />
-                            </ListItem>
-                        ))
-                    }
+                    {secondaryUserInfo.map((user) => (
+                        <ListItem>
+                            <ListItemText secondary={user.email} />
+                        </ListItem>
+                    ))}
                     <ListItemLink href="/api/addAccount">
                         <ListItemText primary="Add Account" />
                     </ListItemLink>
@@ -75,5 +75,7 @@ function Profile(props) {
         </div>
     )
 }
+
+
 
 export default Profile;

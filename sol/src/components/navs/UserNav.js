@@ -5,7 +5,6 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import { withRouter } from 'react-router-dom';
@@ -38,20 +37,12 @@ function UserNav(props) {
         setProfileAnchorEl(null);
     };
 
-    const handleMenuClick = (path) => {
-        history.push(path);
-        setMenuAnchorEl(null);
-    };
 
     const handleMenu = (event) => {
-        setMenuAnchorEl(event.currentTarget);
-    }
-
-    const handleProfileMenu = (event) => {
         setProfileAnchorEl(event.currentTarget);
     };
 
-    const handleProfileClick = (path) => {
+    const handleClick = (path) => {
         history.push(path);
         setProfileAnchorEl(null);
     };
@@ -61,35 +52,6 @@ function UserNav(props) {
         <div className={classes.root}>
             <AppBar position="static">
                 <Toolbar>
-                    <div>
-                        <IconButton
-                            edge="start"
-                            className={classes.menuButton}
-                            color="inherit"
-                            aria-label="menu"
-                            onClick={handleMenu}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Menu
-                            id="menu-appbar"
-                            anchorEl={menuAnchorEl}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            open={menuOpen}
-                            onClose={() => setMenuAnchorEl(null)}
-                        >
-                            <MenuItem onClick={() => handleMenuClick('/assignments')}>Assignments</MenuItem>
-                            <MenuItem onClick={() => handleMenuClick('/courses')}>Courses</MenuItem>
-                        </Menu>
-                    </div>
                     <Typography variant="h6" className={classes.title}>
                         My Luna App
                     </Typography>
@@ -98,10 +60,10 @@ function UserNav(props) {
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
                             aria-haspopup="true"
-                            onClick={handleProfileMenu}
+                            onClick={handleMenu}
                             color="inherit"
                         >
-                            <AccountCircle />
+                            <MenuIcon />
                         </IconButton>
                         <Menu
                             id="profile-appbar"
@@ -118,7 +80,8 @@ function UserNav(props) {
                             open={profileOpen}
                             onClose={() => setProfileAnchorEl(null)}
                         >
-                            <MenuItem onClick={() => handleProfileClick("/profile")}>Profile</MenuItem>
+                            <MenuItem onClick={() => handleClick("/profile")}>Profile</MenuItem>
+                            <MenuItem onClick={() => handleClick("/assignments")}>Assignments</MenuItem>
                             <MenuItem onClick={handleLogout}>Logout</MenuItem>
                         </Menu>
                     </div>

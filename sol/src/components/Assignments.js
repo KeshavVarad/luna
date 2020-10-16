@@ -42,13 +42,14 @@ export default function Assignments(props) {
         thursday: [],
         friday: [],
         saturday: [],
-    });
+    }, [props.assignments]);
 
 
 
     const fetchData = async () => {
         const assignmentData = await fetch('/api/google/assignments');
         const assignments = await assignmentData.json();
+        console.log("Assignments: ", assignments);
         setAssignments(assignments);
     };
 
@@ -72,11 +73,13 @@ export default function Assignments(props) {
                             <TableBody>
                                 {assignments[day].map((row) => {
                                     row.dueTime.minutes = row.dueTime.minutes?row.dueTime.minutes:0;
-                                    var month = `${(row.dueDate.month>10)?row.dueDate.month:`0${row.dueDate.month}`}`;
-                                    var day = `${(row.dueDate.day>10)?row.dueDate.day:`0${row.dueDate.day}`}`;
-                                    var hour = `${(row.dueTime.hours>10)?row.dueTime.hours:`0${row.dueTime.hours}`}`;
-                                    var minute = `${(row.dueTime.minutes>10)?row.dueTime.minutes:`0${row.dueTime.minutes}`}`;
+                                    var month = `${(row.dueDate.month>=10)?row.dueDate.month:`0${row.dueDate.month}`}`;
+                                    var day = `${(row.dueDate.day>=10)?row.dueDate.day:`0${row.dueDate.day}`}`;
+                                    var hour = `${(row.dueTime.hours>=10)?row.dueTime.hours:`0${row.dueTime.hours}`}`;
+                                    var minute = `${(row.dueTime.minutes>=10)?row.dueTime.minutes:`0${row.dueTime.minutes}`}`;
                                     var dateString = `${row.dueDate.year}-${month}-${day}T${hour}:${minute}Z`;
+
+
 
 
                                     const patternTime = date_and_time.compile('hh:mm A');
