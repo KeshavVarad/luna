@@ -35,7 +35,17 @@ export default function Assignments(props) {
     }, [props.assignments]);
 
 
-    const [assignments, setAssignments] = useState({
+    const [googleAssignments, setGoogleAssignments] = useState({
+        sunday: [],
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+    }, [props.assignments]);
+
+    const [canvasAssignments, setCanvasAssignments] = useState({
         sunday: [],
         monday: [],
         tuesday: [],
@@ -48,10 +58,14 @@ export default function Assignments(props) {
 
 
     const fetchData = async () => {
-        const assignmentData = await fetch('/api/google/assignments');
-        const assignments = await assignmentData.json();
-        console.log("Assignments: ", assignments);
-        setAssignments(assignments);
+        const googleAssignmentData = await fetch('/api/google/assignments');
+        const googleAssignments = await googleAssignmentData.json();
+
+        const canvasAssignmentData = await fetch('/api/canvas/assignments');
+        const canvasAssignments = await canvasAssignmentData.json();
+
+        setGoogleAssignments(googleAssignments);
+        setCanvasAssignments(canvasAssignments);
     };
 
     const classes = useStyles();
@@ -61,7 +75,7 @@ export default function Assignments(props) {
             <UserNav />
             <h1>Assignments</h1>
             <Container>
-                {Object.keys(assignments).map((day) => (
+                {Object.keys(googleAssignments).map((day) => (
                     <div>
                         <h2>{titleCase(day)}</h2>
                         <TableContainer component={Paper}>
@@ -73,7 +87,7 @@ export default function Assignments(props) {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {assignments[day].map((row) => {
+                                    {googleAssignments[day].map((row) => {
                                         row.dueTime.minutes = row.dueTime.minutes ? row.dueTime.minutes : 0;
                                         var month = `${(row.dueDate.month >= 10) ? row.dueDate.month : `0${row.dueDate.month}`}`;
                                         var day = `${(row.dueDate.day >= 10) ? row.dueDate.day : `0${row.dueDate.day}`}`;
@@ -94,6 +108,28 @@ export default function Assignments(props) {
                                                 <TableCell component="th" scope="row">
                                                     <Typography>
                                                         <Link href={row.alternateLink} target="_blank" color="inherit">{row.title}</Link>
+                                                    </Typography>
+
+                                                </TableCell>
+                                                <TableCell align="right">{dTime}</TableCell>
+                                            </TableRow>
+                                        )
+                                    }
+                                    )}
+                                    {canvasAssignments[day].map((row) => {
+                                        
+                                        var dateString = `${row.due_at}`;
+
+                                        const patternTime = date_and_time.compile('hh:mm A');
+                                        var dTime = date_and_time.format(new Date(dateString), patternTime);
+
+
+
+                                        return (
+                                            <TableRow key={row.name}>
+                                                <TableCell component="th" scope="row">
+                                                    <Typography>
+                                                        <Link href={row.html_url} target="_blank" color="inherit">{row.name}</Link>
                                                     </Typography>
 
                                                 </TableCell>

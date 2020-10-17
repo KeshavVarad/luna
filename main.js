@@ -9,6 +9,7 @@ const session = require('express-session');
 var FileStore = require('session-file-store')(session);
 const app = express();
 const { google } = require('googleapis');
+const axios = require('axios');
 require('custom-env').env();
 
 
@@ -62,7 +63,7 @@ app.get('/auth/google/callback', async (req, res) => {
 
 
   //Set the oAuthClient to use the token that we just got
-  oAuth2Client.setCredentials({ access_token: token.access_token });
+  oAuth2Client.setCredentials(token);
 
   //Make an oauth2 client using the oAuthClient we just made
   var oauth2 = google.oauth2({
@@ -81,6 +82,8 @@ app.get('/auth/google/callback', async (req, res) => {
     req.session.user = {};
     //Store the user's data into the session
     req.session.user.primary = user.data;
+    req.session.user.secondary = [];
+    req.session.user.canvas = [];
 
     //Read the fiile with the user's token in it
 
@@ -93,10 +96,9 @@ app.get('/auth/google/callback', async (req, res) => {
     }
     userJSON.primary = token;
     if (userJSON.secondary.length >= 1) {
-      req.session.user.secondary = [];
       for (secondaryToken of userJSON.secondary) {
         //Set the oAuthClient to use the token that we just got
-        oAuth2Client.setCredentials({ access_token: secondaryToken.access_token });
+        oAuth2Client.setCredentials(secondaryToken);
 
         //Make an oauth2 client using the oAuthClient we just made
         oauth2 = google.oauth2({
@@ -106,6 +108,17 @@ app.get('/auth/google/callback', async (req, res) => {
 
         var secondaryUser = await oauth2.userinfo.get();
         req.session.user.secondary.push(secondaryUser.data);
+      }
+    }
+    if (userJSON.canvas.length >= 1) {
+      for (canvasToken of userJSON.canvas) {
+        const account = await axios.get(`https://rchs.instructure.com/api/v1/users/self`, {
+          params: {
+            access_token: canvasToken,
+          }
+        });
+        console.log("Canvas Account: ", account.data);
+        req.session.user.canvas.push(account.data);
       }
     }
     // Store the token to disk for later program executions
