@@ -117,7 +117,6 @@ app.get('/auth/google/callback', async (req, res) => {
             access_token: canvasToken,
           }
         });
-        console.log("Canvas Account: ", account.data);
         req.session.user.canvas.push(account.data);
       }
     }

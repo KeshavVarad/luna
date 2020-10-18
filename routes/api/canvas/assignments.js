@@ -64,7 +64,7 @@ router.get("/", async (req, res) => {
         }
     }
 
-    res.json(allAssignments);
+    res.json(assignments);
 
 
 });

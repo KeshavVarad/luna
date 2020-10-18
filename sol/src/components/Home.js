@@ -62,9 +62,9 @@ function Home(props) {
             <Container>
                 <Typography variant="h2">About</Typography>
                 <Typography variant="body1">
-                Luna is a website built to help students keep up with their assignments. It can be pretty difficult to have to check
+                Luna is a website built to help students keep up with their assignments. It can be difficult to have to check
                 two or more different Learning Management Systems for assignments. Sometimes you forget. And that can be really bad for
-                your grade. Luna takes all of the assignments of different LMS's and puts them into one place for students to check.
+                your grade. Luna takes all of the assignments of different LMS's and puts them into one place for students to see.
                 </Typography>
             </Container>
         </div>
