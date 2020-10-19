@@ -92,7 +92,7 @@ app.get('/auth/google/callback', async (req, res) => {
       userJSON = JSON.parse(userData);
     }
     catch {
-      userJSON = { primary: {}, secondary: [] };
+      userJSON = { primary: {}, secondary: [], canvas: [] };
     }
     userJSON.primary = token;
     if (userJSON.secondary.length >= 1) {
