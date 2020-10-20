@@ -8,8 +8,12 @@ router.get("/", async (req, res) => {
     const data = fs.readFileSync(path.join(__dirname, `../../../users/${req.session.user.primary.id}.json`));
     const userJSON = JSON.parse(data);
 
+    var allAssignments = [];
 
-    const allAssignments = await getAssignments(userJSON.canvas);
+    if (userJSON.canvas.length >= 1)
+    {
+        allAssignments = await getAssignments(userJSON.canvas);
+    }
 
     //Get today's date
     var now = new Date();
