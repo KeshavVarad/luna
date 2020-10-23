@@ -11,6 +11,8 @@ import Modal from '@material-ui/core/Modal';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import HighlightOff from '@material-ui/icons/HighlightOff';
+import IconButton from '@material-ui/core/IconButton';
 
 
 const axios = require('axios');
@@ -49,19 +51,34 @@ function ListItemLink(props) {
 
 
 function Profile(props) {
-
-    useEffect(() => {
-        fetchData();
-    }, [props.userInfo]);
-
-    const classes = useStyles();
-
     const [primaryUserInfo, setPrimaryUserInfo] = useState({});
     const [secondaryUserInfo, setSecondaryUserInfo] = useState([{ email: "NONE" }]);
     const [canvasUserInfo, setCanvasUserInfo] = useState([{ name: "NONE" }]);
     const [open, setOpen] = useState(false);
     const [modalStyle] = useState(getModalStyle);
+    const classes = useStyles();
 
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        const userData = await fetch('/api/userInfo');
+        const userInfo = await userData.json();
+        setPrimaryUserInfo(userInfo.primary);
+        if (userInfo.secondary.length >= 1) {
+            setSecondaryUserInfo(userInfo.secondary);
+        }
+        else {
+            setSecondaryUserInfo([{ email: "NONE" }]);
+        }
+        if (userInfo.canvas.length >= 1) {
+            setCanvasUserInfo(userInfo.canvas);
+        }
+        else {
+            setCanvasUserInfo([{ name: "NONE" }]);
+        }
+    };
 
     const handleOpen = () => {
         setOpen(true);
@@ -71,10 +88,17 @@ function Profile(props) {
         setOpen(false);
     };
 
+    const handleDelete = async (type, id) => {
+        await axios.delete(
+            `/api/${type}/deleteAccount/${id}`
+        );
+        fetchData();
+    };
+
     const body = (
         <Paper style={modalStyle} className={classes.paper}>
             <Typography>
-                Please put in the access token from your Canvas account.
+                Please put in the access token from your Raleigh Charter High School Canvas account.
             </Typography>
             <form className={classes.form} noValidate autoComplete="off">
                 <TextField
@@ -85,6 +109,7 @@ function Profile(props) {
                                 '/api/canvas/addAccount',
                                 { accessToken: event.target.value }
                             )
+                            fetchData();
                         }
                     }}
                 />
@@ -93,19 +118,7 @@ function Profile(props) {
     );
 
 
-    const fetchData = async () => {
-        const userData = await fetch('/api/userInfo');
-        const userInfo = await userData.json();
-        console.log("User Info: ", userInfo.primary);
-        console.log("Secondary User Info: ", userInfo.secondary);
-        setPrimaryUserInfo(userInfo.primary);
-        if (userInfo.secondary.length >= 1) {
-            setSecondaryUserInfo(userInfo.secondary);
-        }
-        if (userInfo.canvas.length >= 1) {
-            setCanvasUserInfo(userInfo.canvas);
-        }
-    };
+
 
     return (
 
@@ -126,25 +139,39 @@ function Profile(props) {
                     <ListItem>
                         <ListItemText primary="Secondary Google Accounts" />
                     </ListItem>
-                    {secondaryUserInfo.map((user) => (
+                    {secondaryUserInfo.map((user, id) => (
                         <ListItem>
                             <ListItemText secondary={user.email} />
+                            {(user.email === "NONE") ? null :
+                                <IconButton
+                                    onClick={() => handleDelete("google", id)}
+                                >
+                                    <HighlightOff />
+                                </IconButton>
+                            }
                         </ListItem>
+                        
                     ))}
+                    <ListItemLink href="/api/google/addAccount">
+                        <ListItemText secondary="Add Google Account" />
+                    </ListItemLink>
                     <ListItem>
                         <ListItemText primary="Canvas Accounts" />
                     </ListItem>
-                    {canvasUserInfo.map((user) => (
+                    {canvasUserInfo.map((user, id) => (
                         <ListItem>
                             <ListItemText secondary={user.name} />
+                            {(user.name === "NONE") ? null :
+                                <IconButton
+                                    onClick={() => handleDelete("canvas", id)}
+                                >
+                                    <HighlightOff />
+                                </IconButton>
+                            }
                         </ListItem>
                     ))}
-
-                    <ListItemLink href="/api/google/addAccount">
-                        <ListItemText primary="Add Google Account" />
-                    </ListItemLink>
                     <ListItem button onClick={handleOpen}>
-                        <ListItemText primary="Add Canvas Account" />
+                        <ListItemText secondary="Add Canvas Account" />
                     </ListItem>
                 </List>
                 <Modal

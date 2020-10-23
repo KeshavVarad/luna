@@ -3,7 +3,6 @@ const router = require('express').Router();
 router.use('/login', require('./logins/login'));
 router.use('/', require('./isLoggedIn'));
 
-router.use('/google/addAccount', require('./google/addAccount'));
 router.use('/userInfo', require('./userInfo'));
 
 
