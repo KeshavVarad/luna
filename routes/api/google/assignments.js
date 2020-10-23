@@ -4,32 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const date_and_time = require('date-and-time');
 
-async function getCourses(auth, user, callback) {
-    var allTokens = [user.primary, ...user.secondary];
-    var allCourses = [];
-
-    for (var token of allTokens) {
-        auth.setCredentials(token);
-        const classroom = google.classroom({ version: 'v1', auth });
-
-        let courseList = await classroom.courses.list({
-            pageSize: 10,
-            courseStates: ["ACTIVE"],
-        });
-
-
-
-
-        allCourses = [...allCourses, ...courseList.data.courses];
-
-
-
-    }
-
-
-    callback(allCourses);
-}
-
 async function getAssignments(auth, user) {
     //Get today's date
     var date_obj = new Date();
@@ -113,33 +87,35 @@ async function getAssignments(auth, user) {
             courseStates: ["ACTIVE"],
         });
 
-        for (item of courseList.data.courses) {
-            var courseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10 });
-            //Get the nextPageToken to get more courses
-            var nextPageToken = courseWork.data.nextPageToken;
-            //Get the index for the last coursework in the array
-            var index = courseWork.data.courseWork.length - 1;
+        if (courseList.data.courses) {
+            for (item of courseList.data.courses) {
+                var courseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10 });
+                //Get the nextPageToken to get more courses
+                var nextPageToken = courseWork.data.nextPageToken;
+                //Get the index for the last coursework in the array
+                var index = courseWork.data.courseWork.length - 1;
 
-            //Get more coursework if there is still more in the week
-            while ((index < courseWork.data.courseWork.length) && nextPageToken && courseWork.data.courseWork[index].dueDate && (courseWork.data.courseWork[index].dueDate.year >= sundayYear) && (courseWork.data.courseWork[index].dueDate.month >= sundayMonth) && (courseWork.data.courseWork[index].dueDate.day >= sundayDate)) {
-                var newCourseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10, pageToken: nextPageToken });
-                nextPageToken = newCourseWork.data.nextPageToken;
-                courseWork.data.courseWork.push(newCourseWork.data.courseWork);
+                //Get more coursework if there is still more in the week
+                while ((index < courseWork.data.courseWork.length) && nextPageToken && courseWork.data.courseWork[index].dueDate && (courseWork.data.courseWork[index].dueDate.year >= sundayYear) && (courseWork.data.courseWork[index].dueDate.month >= sundayMonth) && (courseWork.data.courseWork[index].dueDate.day >= sundayDate)) {
+                    var newCourseWork = await classroom.courses.courseWork.list({ courseId: item.id, orderBy: "dueDate desc", pageSize: 10, pageToken: nextPageToken });
+                    nextPageToken = newCourseWork.data.nextPageToken;
+                    courseWork.data.courseWork.push(newCourseWork.data.courseWork);
 
-                index++;
+                    index++;
+                }
+
+
+
+
+                allAssignments = [...allAssignments, ...courseWork.data.courseWork];
+
+
+
             }
-
-
-
-
-            allAssignments = [...allAssignments, ...courseWork.data.courseWork];
-
-
-
         }
 
 
-        
+
     }
     return allAssignments;
 }
