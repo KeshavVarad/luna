@@ -10,8 +10,7 @@ router.get("/", async (req, res) => {
 
     var allAssignments = [];
 
-    if (userJSON.canvas.length >= 1)
-    {
+    if (userJSON.canvas.length >= 1) {
         allAssignments = await getAssignments(userJSON.canvas);
     }
 
@@ -25,7 +24,7 @@ router.get("/", async (req, res) => {
     var thursdayDate = date_and_time.addDays(sundayDate, 4);
     var fridayDate = date_and_time.addDays(sundayDate, 5);
     var saturdayDate = date_and_time.addDays(sundayDate, 6);
-    
+
     var assignments = {
         sunday: [],
         monday: [],
@@ -36,34 +35,36 @@ router.get("/", async (req, res) => {
         saturday: []
     };
 
-    for (assignment of allAssignments) {
+    if (allAssignments) {
+        for (assignment of allAssignments) {
 
-        if (assignment.due_at) {
-            
-            const dateString = assignment.due_at;
-            var assignmentDueDate = new Date(dateString);
-            
+            if (assignment.due_at) {
 
-            if (date_and_time.isSameDay(assignmentDueDate, sundayDate)) {
-                assignments["sunday"].push(assignment);
-            }
-            else if (date_and_time.isSameDay(assignmentDueDate, mondayDate)) {
-                assignments["monday"].push(assignment);
-            }
-            else if (date_and_time.isSameDay(assignmentDueDate, tuesdayDate)) {
-                assignments["tuesday"].push(assignment);
-            }
-            else if (date_and_time.isSameDay(assignmentDueDate, wednesdayDate)) {
-                assignments["wednesday"].push(assignment);
-            }
-            else if (date_and_time.isSameDay(assignmentDueDate, thursdayDate)) {
-                assignments["thursday"].push(assignment);
-            }
-            else if (date_and_time.isSameDay(assignmentDueDate, fridayDate)) {
-                assignments["friday"].push(assignment);
-            }
-            else if (date_and_time.isSameDay(assignmentDueDate, saturdayDate)) {
-                assignments["saturday"].push(assignment);
+                const dateString = assignment.due_at;
+                var assignmentDueDate = new Date(dateString);
+
+
+                if (date_and_time.isSameDay(assignmentDueDate, sundayDate)) {
+                    assignments["sunday"].push(assignment);
+                }
+                else if (date_and_time.isSameDay(assignmentDueDate, mondayDate)) {
+                    assignments["monday"].push(assignment);
+                }
+                else if (date_and_time.isSameDay(assignmentDueDate, tuesdayDate)) {
+                    assignments["tuesday"].push(assignment);
+                }
+                else if (date_and_time.isSameDay(assignmentDueDate, wednesdayDate)) {
+                    assignments["wednesday"].push(assignment);
+                }
+                else if (date_and_time.isSameDay(assignmentDueDate, thursdayDate)) {
+                    assignments["thursday"].push(assignment);
+                }
+                else if (date_and_time.isSameDay(assignmentDueDate, fridayDate)) {
+                    assignments["friday"].push(assignment);
+                }
+                else if (date_and_time.isSameDay(assignmentDueDate, saturdayDate)) {
+                    assignments["saturday"].push(assignment);
+                }
             }
         }
     }
@@ -86,25 +87,28 @@ async function getAssignments(access_tokens) {
 
 
         var assignments = [];
-        for (course of courses) {
-            var newAssignments;
-            try {
-                var assignmentResponse = await axios.get(`https://rchs.instructure.com/api/v1/courses/${course.id}/assignments`, {
-                    params: {
-                        access_token,
-                        include: ["all_dates"],
-                        order_by: "due_at",
-                        bucket: "future",
+        if (courses) {
+            for (course of courses) {
+                var newAssignments;
+                try {
+                    var assignmentResponse = await axios.get(`https://rchs.instructure.com/api/v1/courses/${course.id}/assignments`, {
+                        params: {
+                            access_token,
+                            include: ["all_dates"],
+                            order_by: "due_at",
+                            bucket: "future",
 
-                    }
-                });
-                newAssignments = assignmentResponse.data;
+                        }
+                    });
+                    newAssignments = assignmentResponse.data;
+                }
+                catch {
+                    newAssignments = [];
+                }
+                assignments = [...assignments, ...newAssignments];
             }
-            catch {
-                newAssignments = [];
-            }
-            assignments = [...assignments, ...newAssignments];
         }
+
 
 
         allAssignments = [...allAssignments, ...assignments];
