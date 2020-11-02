@@ -1,37 +1,39 @@
 const router = require('express').Router();
-const fs = require('fs');
-const path = require('path');
+const tokenService = require('../../../services/tokenService');
+const { google } = require('googleapis');
 
 
-router.delete('/:id', async (req, res) => {
-    const data = fs.readFileSync(path.join(__dirname, `../../../users/${req.session.user.primary.id}.json`));
-    var userJSON = JSON.parse(data);
 
-    userJSON.secondary.splice(req.params.id, 1);
+router.delete('/:id', async (req, res, next) => {
+  const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
 
-    if (userJSON.secondary.length >= 1) {
-        for (secondaryToken of userJSON.secondary) {
-          //Set the oAuthClient to use the token that we just got
-          oAuth2Client.setCredentials(secondaryToken);
-  
-          //Make an oauth2 client using the oAuthClient we just made
-          oauth2 = google.oauth2({
-            auth: oAuth2Client,
-            version: 'v2'
-          });
-  
-          var secondaryUser = await oauth2.userinfo.get();
-          req.session.user.secondary.push(secondaryUser.data);
-        }
-      }
-    else {
-        req.session.user.secondary = [];
+  var userJSON = await tokenService.getToken(req.session.user.primary.id);
+
+  userJSON.secondary.splice(req.params.id, 1);
+
+  if (userJSON.secondary.length >= 1) {
+    for (secondaryToken of userJSON.secondary) {
+      //Set the oAuthClient to use the token that we just got
+      oAuth2Client.setCredentials(secondaryToken);
+
+      //Make an oauth2 client using the oAuthClient we just made
+      oauth2 = google.oauth2({
+        auth: oAuth2Client,
+        version: 'v2'
+      });
+
+      var secondaryUser = await oauth2.userinfo.get();
+      req.session.user.secondary.push(secondaryUser.data);
     }
+  }
+  else {
+    req.session.user.secondary = [];
+  }
 
-    fs.writeFile(`./users/${req.session.user.primary.id}.json`, JSON.stringify(userJSON), (err) => {
-        if (err) return console.error(err);
-        res.sendStatus(200);
-    });
+  console.log("User JSON: ", userJSON);
+  console.log("Session: ", req.session.user);
+  await tokenService.updateToken(req.session.user.primary.id, userJSON);
+  res.send(200);
 });
 
 

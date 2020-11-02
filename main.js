@@ -119,9 +119,9 @@ app.get('/auth/google/callback', async (req, res) => {
   }
   else {
     req.session.user.secondary.push(user.data);
-    userToken = tokenService.getToken(req.session.user.primary.id);
+    userToken = await tokenService.getToken(req.session.user.primary.id);
     userToken.secondary.push(token);
-    tokenService.updateToken(req.session.user.primary.id, userToken);
+    await tokenService.updateToken(req.session.user.primary.id, userToken);
     res.redirect('/profile');
 
   }

@@ -1,12 +1,12 @@
 const router = require('express').Router();
 const fs = require('fs');
-const path = require('path');
-const { nextTick } = require('process');
+const { token } = require('morgan');
+const tokenService = require('../../../services/tokenService');
 
 
-router.delete('/:id', async (req, res, next) => {
-    const data = fs.readFileSync(path.join(__dirname, `../../../users/${req.session.user.primary.id}.json`));
-    var userJSON = JSON.parse(data);
+router.delete('/:id', async (req, res) => {
+
+    var userJSON = await tokenService.getToken(req.session.user.primary.id);
 
     userJSON.canvas.splice(req.params.id, 1);
 
@@ -24,10 +24,9 @@ router.delete('/:id', async (req, res, next) => {
         req.session.user.canvas = [];
     }
 
-    fs.writeFile(`./users/${req.session.user.primary.id}.json`, JSON.stringify(userJSON), (err) => {
-        if (err) return console.error(err);
-        res.sendStatus(200);
-    });
+    await tokenService.updateToken(req.session.user.primary.id, userJSON);
+    console.log("Sucess;");
+    res.sendStatus(200);
 });
 
 

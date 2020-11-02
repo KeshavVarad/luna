@@ -1,12 +1,11 @@
 const router = require('express').Router();
 const fs = require('fs');
-const path = require('path');
 const axios = require('axios');
+const tokenService = require('../../../services/tokenService');
 
 
 router.post('/', async (req, res, next) => {
-    const data = fs.readFileSync(path.join(__dirname, `../../../users/${req.session.user.primary.id}.json`));
-    var userJSON = JSON.parse(data);
+    var userJSON = await tokenService.getToken(req.session.user.primary.id);
     const access_token = req.body.accessToken;
 
     try {
@@ -32,10 +31,8 @@ router.post('/', async (req, res, next) => {
 
     
 
-    fs.writeFile(`./users/${req.session.user.primary.id}.json`, JSON.stringify(userJSON), (err) => {
-        if (err) return console.error(err);
-        res.redirect("/profile");
-    });
+    await tokenService.updateToken(req.session.user.primary.id, userJSON);
+    res.redirect('/profile');
 });
 
 
