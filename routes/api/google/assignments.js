@@ -3,6 +3,7 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 const date_and_time = require('date-and-time');
+const tokenService = require("../../../services/tokenService");
 
 async function getAssignments(auth, user) {
     //Get today's date
@@ -121,11 +122,9 @@ async function getAssignments(auth, user) {
 }
 
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     //Make oauth client
     const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.CALLBACK_URL);
-    //File name for user's data
-    var filename = path.join(__dirname, `../../../users/${req.session.user.primary.id}.json`);
 
     //Get today's date
     var date_obj = new Date();
@@ -209,76 +208,61 @@ router.get('/', (req, res) => {
 
 
 
-    //Read file that has user data in it
-    fs.readFile(filename, async (err, data) => {
-        if (err) console.log(err);
 
-        var user = JSON.parse(data);
-
-
-        var allAssignments = await getAssignments(oAuth2Client, user);
-        // Add the coursework to the right day in the assignments object
-        for (assignment of allAssignments) {
+    var userToken = await tokenService.getToken(req.session.user.primary.id);
+    var allAssignments = await getAssignments(oAuth2Client, userToken);
+    // Add the coursework to the right day in the assignments object
+    for (assignment of allAssignments) {
 
 
-
-
-
-
-
-
-            if (assignment.dueDate) {
-                var minute, hour, day, month, year;
-                month = `${(assignment.dueDate.month >= 10) ? assignment.dueDate.month : `0${assignment.dueDate.month}`}`;
-                day = `${(assignment.dueDate.day >= 10) ? assignment.dueDate.day : `0${assignment.dueDate.day}`}`;
-                if (assignment.dueTime.hours) {
-                    hour = `${(assignment.dueTime.hours >= 10) ? assignment.dueTime.hours : `0${assignment.dueTime.hours}`}`;
-                }
-                else {
-                    hour = "00";
-                }
-                if (assignment.dueTime.minutes) {
-                    minute = `${(assignment.dueTime.minutes >= 10) ? assignment.dueTime.minutes : `0${assignment.dueTime.minutes}`}`;
-                }
-                else {
-                    minute = "00";
-                }
-                var dateString = `${assignment.dueDate.year}-${month}-${day}T${hour}:${minute}Z`;
-                const patternTime = date_and_time.compile('D');
-                var assignmentDueDay = date_and_time.format(new Date(dateString), patternTime);
+        if (assignment.dueDate) {
+            var minute, hour, day, month, year;
+            month = `${(assignment.dueDate.month >= 10) ? assignment.dueDate.month : `0${assignment.dueDate.month}`}`;
+            day = `${(assignment.dueDate.day >= 10) ? assignment.dueDate.day : `0${assignment.dueDate.day}`}`;
+            if (assignment.dueTime.hours) {
+                hour = `${(assignment.dueTime.hours >= 10) ? assignment.dueTime.hours : `0${assignment.dueTime.hours}`}`;
+            }
+            else {
+                hour = "00";
+            }
+            if (assignment.dueTime.minutes) {
+                minute = `${(assignment.dueTime.minutes >= 10) ? assignment.dueTime.minutes : `0${assignment.dueTime.minutes}`}`;
+            }
+            else {
+                minute = "00";
+            }
+            var dateString = `${assignment.dueDate.year}-${month}-${day}T${hour}:${minute}Z`;
+            const patternTime = date_and_time.compile('D');
+            var assignmentDueDay = date_and_time.format(new Date(dateString), patternTime);
 
 
 
-                if (assignmentDueDay == sundayDate) {
-                    assignments["sunday"].push(assignment);
-                }
-                else if (assignmentDueDay == (sundayDate + 1)) {
-                    assignments["monday"].push(assignment);
-                }
-                else if (assignmentDueDay == (sundayDate + 2)) {
-                    assignments["tuesday"].push(assignment);
-                }
-                else if (assignmentDueDay == (sundayDate + 3)) {
-                    assignments["wednesday"].push(assignment);
-                }
-                else if (assignmentDueDay == (sundayDate + 4)) {
-                    assignments["thursday"].push(assignment);
-                }
-                else if (assignmentDueDay == (sundayDate + 5)) {
-                    assignments["friday"].push(assignment);
-                }
-                else if (assignmentDueDay == (sundayDate + 6)) {
-                    assignments["saturday"].push(assignment);
-                }
+            if (assignmentDueDay == sundayDate) {
+                assignments["sunday"].push(assignment);
+            }
+            else if (assignmentDueDay == (sundayDate + 1)) {
+                assignments["monday"].push(assignment);
+            }
+            else if (assignmentDueDay == (sundayDate + 2)) {
+                assignments["tuesday"].push(assignment);
+            }
+            else if (assignmentDueDay == (sundayDate + 3)) {
+                assignments["wednesday"].push(assignment);
+            }
+            else if (assignmentDueDay == (sundayDate + 4)) {
+                assignments["thursday"].push(assignment);
+            }
+            else if (assignmentDueDay == (sundayDate + 5)) {
+                assignments["friday"].push(assignment);
+            }
+            else if (assignmentDueDay == (sundayDate + 6)) {
+                assignments["saturday"].push(assignment);
             }
         }
+    }
 
 
-        res.json(assignments);
-    });
-
-
-
+    res.json(assignments);
 
 
 

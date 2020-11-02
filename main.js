@@ -4,12 +4,12 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const url = require('url');
-const fs = require('fs');
 const session = require('express-session');
 var FileStore = require('session-file-store')(session);
 const app = express();
 const { google } = require('googleapis');
 const axios = require('axios');
+const tokenService = require('./services/tokenService');
 require('custom-env').env();
 
 
@@ -26,14 +26,7 @@ app.use(session({
   saveUninitialized: false,
 }));
 
-// Auth middleware that checks if the user is logged in
-const isLoggedIn = (req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.sendStatus(401);
-  };
-};
+
 
 app.use(require('./routes'));
 
@@ -74,7 +67,7 @@ app.get('/auth/google/callback', async (req, res) => {
   //Get the user's info
   var user = await oauth2.userinfo.get();
   //Make a variable called userData
-  var userData, userJSON;
+  var userToken;
 
   //If the user's data is not stored in the session
   if (!req.session.user) {
@@ -85,18 +78,17 @@ app.get('/auth/google/callback', async (req, res) => {
     req.session.user.secondary = [];
     req.session.user.canvas = [];
 
-    //Read the fiile with the user's token in it
+    //Read file that has user data in it
+    userToken = await tokenService.getToken(req.session.user.primary.id);
+    if (!userToken) {
+      userToken = { primary: {}, secondary: [], canvas: [] };
+      userToken.primary = token;
+      userToken._id = req.session.user.primary.id;
+      await tokenService.insertToken(userToken);
+    }
 
-    try {
-      userData = fs.readFileSync(`./users/${req.session.user.primary.id}.json`, { flag: "r" });
-      userJSON = JSON.parse(userData);
-    }
-    catch {
-      userJSON = { primary: {}, secondary: [], canvas: [] };
-    }
-    userJSON.primary = token;
-    if (userJSON.secondary.length >= 1) {
-      for (secondaryToken of userJSON.secondary) {
+    if (userToken.secondary.length >= 1) {
+      for (secondaryToken of userToken.secondary) {
         //Set the oAuthClient to use the token that we just got
         oAuth2Client.setCredentials(secondaryToken);
 
@@ -110,8 +102,8 @@ app.get('/auth/google/callback', async (req, res) => {
         req.session.user.secondary.push(secondaryUser.data);
       }
     }
-    if (userJSON.canvas.length >= 1) {
-      for (canvasToken of userJSON.canvas) {
+    if (userToken.canvas.length >= 1) {
+      for (canvasToken of userToken.canvas) {
         const account = await axios.get(`https://rchs.instructure.com/api/v1/users/self`, {
           params: {
             access_token: canvasToken,
@@ -120,23 +112,18 @@ app.get('/auth/google/callback', async (req, res) => {
         req.session.user.canvas.push(account.data);
       }
     }
-    // Store the token to disk for later program executions
-    fs.writeFile(`./users/${req.session.user.primary.id}.json`, JSON.stringify(userJSON), (err) => {
-      if (err) return console.error(err);
-      res.redirect('/assignments');
-    });
+    console.log("Session: ", req.session.user);
+    res.redirect("/assignments");
+  
+
   }
   else {
     req.session.user.secondary.push(user.data);
-    //Read the fiile with the user's token in it
-    userData = fs.readFileSync(`./users/${req.session.user.primary.id}.json`, { flag: "r" });
-    userJSON = JSON.parse(userData);
-    userJSON.secondary.push(token);
-    // Store the token to disk for later program executions
-    fs.writeFile(`./users/${req.session.user.primary.id}.json`, JSON.stringify(userJSON), (err) => {
-      if (err) return console.error(err);
-      res.redirect('/profile');
-    });
+    userToken = tokenService.getToken(req.session.user.primary.id);
+    userToken.secondary.push(token);
+    tokenService.updateToken(req.session.user.primary.id, userToken);
+    res.redirect('/profile');
+
   }
 
 

@@ -3,17 +3,15 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const date_and_time = require('date-and-time');
+const tokenService = require('../../../services/tokenService');
 
 router.get("/", async (req, res) => {
-    const data = fs.readFileSync(path.join(__dirname, `../../../users/${req.session.user.primary.id}.json`));
-    const userJSON = JSON.parse(data);
-
     var allAssignments = [];
 
-    if (userJSON.canvas.length >= 1) {
-        allAssignments = await getAssignments(userJSON.canvas);
+    var userToken = await tokenService.getToken(req.session.user.primary.id);
+    if (userToken.canvas.length >= 1) {
+        allAssignments = await getAssignments(userToken.canvas);
     }
-
     //Get today's date
     var now = new Date();
     var day = now.getDay();
