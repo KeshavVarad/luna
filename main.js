@@ -75,20 +75,20 @@ app.get('/auth/google/callback', async (req, res) => {
     req.session.user = {};
     //Store the user's data into the session
     req.session.user.primary = user.data;
-    req.session.user.secondary = [];
+    req.session.user.google = [];
     req.session.user.canvas = [];
 
     //Read file that has user data in it
     userToken = await tokenService.getToken(req.session.user.primary.id);
     if (!userToken) {
-      userToken = { primary: {}, secondary: [], canvas: [] };
+      userToken = { primary: {}, google: [], canvas: [] };
       userToken.primary = token;
       userToken._id = req.session.user.primary.id;
       await tokenService.insertToken(userToken);
     }
 
-    if (userToken.secondary.length >= 1) {
-      for (secondaryToken of userToken.secondary) {
+    if (userToken.google.length >= 1) {
+      for (secondaryToken of userToken.google) {
         //Set the oAuthClient to use the token that we just got
         oAuth2Client.setCredentials(secondaryToken);
 
@@ -99,7 +99,7 @@ app.get('/auth/google/callback', async (req, res) => {
         });
 
         var secondaryUser = await oauth2.userinfo.get();
-        req.session.user.secondary.push(secondaryUser.data);
+        req.session.user.google.push(secondaryUser.data);
       }
     }
     if (userToken.canvas.length >= 1) {
@@ -112,15 +112,14 @@ app.get('/auth/google/callback', async (req, res) => {
         req.session.user.canvas.push(account.data);
       }
     }
-    console.log("Session: ", req.session.user);
     res.redirect("/assignments");
   
 
   }
   else {
-    req.session.user.secondary.push(user.data);
+    req.session.user.google.push(user.data);
     userToken = await tokenService.getToken(req.session.user.primary.id);
-    userToken.secondary.push(token);
+    userToken.google.push(token);
     await tokenService.updateToken(req.session.user.primary.id, userToken);
     res.redirect('/profile');
 

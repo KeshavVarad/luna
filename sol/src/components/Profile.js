@@ -66,8 +66,8 @@ function Profile(props) {
         const userData = await fetch('/api/userInfo');
         const userInfo = await userData.json();
         setPrimaryUserInfo(userInfo.primary);
-        if (userInfo.secondary.length >= 1) {
-            setSecondaryUserInfo(userInfo.secondary);
+        if (userInfo.google.length >= 1) {
+            setSecondaryUserInfo(userInfo.google);
         }
         else {
             setSecondaryUserInfo([{ email: "NONE" }]);

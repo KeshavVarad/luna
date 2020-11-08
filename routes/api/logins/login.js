@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { google } = require('googleapis');
-const SCOPES = ['profile', 'email', 'https://www.googleapis.com/auth/classroom.courses.readonly', 'https://www.googleapis.com/auth/classroom.coursework.me.readonly'];
+const SCOPES = ['profile', 'email'];
 
 
 router.get("/", function (req, res) {

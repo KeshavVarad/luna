@@ -9,10 +9,12 @@ router.delete('/:id', async (req, res, next) => {
 
   var userJSON = await tokenService.getToken(req.session.user.primary.id);
 
-  userJSON.secondary.splice(req.params.id, 1);
+  userJSON.google.splice(req.params.id, 1);
 
-  if (userJSON.secondary.length >= 1) {
-    for (secondaryToken of userJSON.secondary) {
+  console.log("User Data: ", userJSON);
+  if (userJSON.google.length >= 1) {
+    req.session.user.google = [];
+    for (secondaryToken of userJSON.google) {
       //Set the oAuthClient to use the token that we just got
       oAuth2Client.setCredentials(secondaryToken);
 
@@ -23,11 +25,11 @@ router.delete('/:id', async (req, res, next) => {
       });
 
       var secondaryUser = await oauth2.userinfo.get();
-      req.session.user.secondary.push(secondaryUser.data);
+      req.session.user.google.push(secondaryUser.data);
     }
   }
   else {
-    req.session.user.secondary = [];
+    req.session.user.google = [];
   }
 
   console.log("User JSON: ", userJSON);

@@ -76,7 +76,7 @@ async function getAssignments(auth, user) {
 
 
 
-    var allTokens = [user.primary, ...user.secondary];
+    var allTokens = user.google;
     var allAssignments = [];
 
     for (var token of allTokens) {
